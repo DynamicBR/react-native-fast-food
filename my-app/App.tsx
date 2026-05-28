@@ -3,6 +3,11 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, Alert, Image, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
+// 1. Criamos a interface que permite a conexão com o App Principal
+export interface PedidosProps {
+  onFinalizarPedido?: (descricao_pedido: string, valor_total: number) => void;
+}
+
 const MENU = {
   foods: [
     { id: 'hamburguer', name: 'Hambúrguer', price: 25, image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Hamburger_%28black_bg%29.jpg/240px-Hamburger_%28black_bg%29.jpg' },
@@ -16,15 +21,14 @@ const MENU = {
   ]
 };
 
-export default function App() {
+// 2. Recebemos a prop no componente principal
+export default function App({ onFinalizarPedido }: PedidosProps) {
   const [foodId, setFoodId] = useState(MENU.foods[0].id);
   const [drinkId, setDrinkId] = useState(MENU.drinks[0].id);
 
-  // Busca os objetos completos baseados no ID selecionado
   const selectedFood = MENU.foods.find(f => f.id === foodId)!;
   const selectedDrink = MENU.drinks.find(d => d.id === drinkId)!;
   
-  // Calcula o total
   const totalPrice = selectedFood.price + selectedDrink.price;
 
   const placeOrder = () => {
@@ -32,6 +36,12 @@ export default function App() {
       'Pedido Confirmado!', 
       `Resumo do pedido:\n🍔 1x ${selectedFood.name}\n🥤 1x ${selectedDrink.name}\n\nTotal a pagar: R$ ${totalPrice.toFixed(2)}`
     );
+
+    // 3. O PULO DO GATO: Se o app principal estiver escutando, mandamos os dados pra ele!
+    if (onFinalizarPedido) {
+      const descricaoFormatada = `1x ${selectedFood.name} + 1x ${selectedDrink.name}`;
+      onFinalizarPedido(descricaoFormatada, totalPrice);
+    }
   };
 
   return (
@@ -89,7 +99,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#FFF3E0', // Cor de fundo quente (estilo fast-food)
+    backgroundColor: '#FFF3E0', 
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -99,7 +109,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 30,
     marginTop: 40,
-    color: '#D90429', // Vermelho vibrante
+    color: '#D90429', 
   },
   row: {
     flexDirection: 'row',
@@ -138,7 +148,7 @@ const styles = StyleSheet.create({
     color: '#457B9D',
   },
   summaryContainer: {
-    backgroundColor: '#F4A261', // Laranja amarelado para destaque
+    backgroundColor: '#F4A261', 
     width: '100%',
     padding: 20,
     borderRadius: 12,
